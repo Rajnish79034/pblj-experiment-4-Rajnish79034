@@ -1,0 +1,124 @@
+Questions 1.
+#include <iostream>
+#include <vector>
+#include <string>
+
+class Card {
+private:
+    std::string symbol;
+    std::string value;
+
+public:
+    
+    Card(const std::string& symbol, const std::string& value) : symbol(symbol), value(value) {}
+
+    
+    std::string getSymbol() const {
+        return symbol;
+    }
+
+    
+    std::string getValue() const {
+        return value;
+    }
+
+    
+    void display() const {
+        std::cout << value << " of " << symbol << std::endl;
+    }
+};
+
+class CardCollection {
+private:
+    std::vector<Card> cards;
+
+public:
+    
+    void addCard(const Card& card) {
+        cards.push_back(card);
+    }
+
+    
+    void findCardsBySymbol(const std::string& symbol) const {
+        bool found = false;
+        std::cout << "Cards with symbol '" << symbol << "':\n";
+        for (const auto& card : cards) {
+            if (card.getSymbol() == symbol) {
+                card.display();
+                found = true;
+            }
+        }
+        if (!found) {
+            std::cout << "No cards found for the symbol '" << symbol << "'.\n";
+        }
+    }
+};
+
+int main() {
+    CardCollection cardCollection;
+
+    
+    cardCollection.addCard(Card("Hearts", "Ace"));
+    cardCollection.addCard(Card("Hearts", "King"));
+    cardCollection.addCard(Card("Spades", "Queen"));
+    cardCollection.addCard(Card("Diamonds", "10"));
+    cardCollection.addCard(Card("Clubs", "2"));
+
+    
+    std::string symbolToSearch;
+    std::cout << "Enter the symbol to search for (e.g., Hearts, Spades, Diamonds, Clubs): ";
+    std::cin >> symbolToSearch;
+
+    
+    cardCollection.findCardsBySymbol(symbolToSearch);
+
+    return 0;
+}
+
+
+Questions 2. 
+
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <mutex>
+#include <chrono>
+
+std::mutex seatMutex;
+const int totalSeats = 10;
+int bookedSeats = 0;
+
+void bookSeat(const std::string& userType) {
+    std::lock_guard<std::mutex> lock(seatMutex);
+    if (bookedSeats < totalSeats) {
+        bookedSeats++;
+        std::cout << userType << " booked seat " << bookedSeats << std::endl;
+    } else {
+        std::cout << userType << " could not book a seat. No seats available." << std::endl;
+    }
+}
+
+void vipBooking() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    bookSeat("VIP");
+}
+
+void regularBooking() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    bookSeat("Regular");
+}
+
+int main() {
+    std::vector<std::thread> bookingThreads;
+    for (int i = 0; i < 5; i++) {
+        bookingThreads.push_back(std::thread(vipBooking));
+    }
+    for (int i = 0; i < 10; i++) {
+        bookingThreads.push_back(std::thread(regularBooking));
+    }
+    for (auto& t : bookingThreads) {
+        t.join();
+    }
+    std::cout << "Booking process complete. Total booked seats: " << bookedSeats << std::endl;
+    return 0;
+}
